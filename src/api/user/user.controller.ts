@@ -39,7 +39,7 @@ export class UserController {
 
   @UseGuards(AuthGuard, RolesGuard)
   @AccessRoles(Roles.SUPERADMIN)
-  @Post(' Admin')
+  @Post('admin')
   @ApiBearerAuth()
   createAdmin(@Body() userAdminDto: CreateUserDto) {
     return this.userService.createUser(userAdminDto, Roles.ADMIN);
