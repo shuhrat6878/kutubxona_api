@@ -1,0 +1,64 @@
+# name: Deploy
+
+# on:
+#   workflow_dispatch:
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Repositoriyani yuklab olish
+#         uses: actions/checkout@v5
+
+#       - name: Node.js'ni yuklab olish
+#         uses: actions/setup-node@v5
+#         with:
+#           node-version: 22.17.0
+
+#       - name: node_modules'ni o'rnatish
+#         run: npm install
+
+#       - name: Build qilish
+#         run: npm run build
+
+#       - name: ssh-key'ni sozlash
+#         run: |
+#           mkdir ~/.ssh
+#           chmod 700 ~/.ssh  
+#           ssh-keyscan -H ${{secrets.IP}} >> ~/.ssh/known_hosts
+#           touch ~/.ssh/id_rsa
+#           chmod 600 ~/.ssh/id_rsa
+#           echo "${{secrets.SSH_PRIVATE_KEY}}" > ~/.ssh/id_rsa
+
+#       - name: ssh-keyni ko'rish
+#         run: cat ~/.ssh/id_rsa
+
+#       - name: Repositoriyani clone qilish
+#         run: |
+#           ssh root@${{secrets.IP}} << EOF
+#           if [ -d ~/${{vars.PROJECT_FOLDER}} ]; then
+#             cd ~/${{vars.PROJECT_FOLDER}}
+#             git pull origin main
+#             npm install
+#           else
+#            git clone ${{secrets.GIT_URL}}
+#            cd ~/${{vars.PROJECT_FOLDER}}
+#            npm i -g npm
+#            npm install
+#           fi
+#           npm run build
+#           EOF
+
+#       - name: .env'ni yaratish
+#         run: |
+#           ssh root@${{secrets.IP}} << EOF
+#           cd ~/${{vars.PROJECT_FOLDER}}
+#           cp .env.example .env
+#           sed -i \
+#           -e "s|^PORT=.*|PORT=${{vars.PORT}}|" \
+#           -e "s|^HOST=.*|HOST=${{vars.HOST}}|" \
+#           -e "s|^DB_URL=.*|DB_URL=${{vars.DB_URL}}|" \
+#           .env
+
+#       - name: PM2
+#         run: ssh root@${{secrets.IP}} "pm2 restart CICD || pm2 start ~/${{vars.PROJECT_FOLDER}}/dist/main.js --name CICD"
